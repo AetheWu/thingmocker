@@ -1,0 +1,12 @@
+version: "3"
+
+services:
+  thingmocker0: &defaults
+    build:
+      context: ../
+      dockerfile: ./deploy/Dockerfile
+    container_name: thingmocker0
+    command: ["thingmocker", "start", "-c", "/etc/thingmocker/config.yaml", "-e", "development"]
+    volumes:
+      - ../configs/config.yaml:/etc/thingmocker/config.yaml
+      - ../configs/triad.csv:/etc/thingmocker/triad.csv
