@@ -1,15 +1,12 @@
 defaults: &defaults
-  MQTT_HOST: localhost
+  MQTT_HOST: fogapi.mxchip.com.cn
   MQTT_PORT: 1883
 
   MESSAGE_RATE: 1000
-  MESSAGE_DURATION: 100
+  MESSAGE_DURATION: 120
 
   DEVICE_STEP_NUM: 500
   DEVICE_TRIAD_FILEPATH: ./configs/triad.csv
 
 development:
   <<: *defaults
-  MQTT_HOST: host.docker.internal
-
-  DEVICE_TRIAD_FILEPATH: /etc/thingmocker/triad.csv

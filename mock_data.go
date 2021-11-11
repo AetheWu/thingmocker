@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"strconv"
 	"sync"
 )
 
@@ -26,16 +25,16 @@ func getExampleThingModel() *Metadata {
 	return &metadata
 }
 
-func generateExampleProperties(id uint64, timestamp int64) []byte {
+func generateExampleProperties(id uint32, timestamp int64) []byte {
 	msg := ThingJsonPropPost{
 		ThingJsonHeader: ThingJsonHeader{
-			Id:      strconv.Itoa(int(id)),
+			Id:      id,
 			Version: "1.0",
 			Timestamp: timestamp,
 		},
 		Params: map[string]interface{} {
-			"prop1": 1,
-			"prop2": 2,
+			"prop1": 111,
+			"prop2": 222,
 			"prop3": "hello",
 		},
 	}
@@ -44,10 +43,10 @@ func generateExampleProperties(id uint64, timestamp int64) []byte {
 	return rawData
 }
 
-func generateExampleEvents(id uint64, timestamp int64) []byte {
+func generateExampleEvents(id uint32, timestamp int64) []byte {
 	msg := ThingJsonEventPost{
 		ThingJsonHeader: ThingJsonHeader{
-			Id:      strconv.Itoa(int(id)),
+			Id:      id,
 			Version: "1.0",
 		},
 		Params: map[string]ThingJsonEventParam{

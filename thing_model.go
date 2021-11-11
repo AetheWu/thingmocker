@@ -59,7 +59,7 @@ type StructField struct {
 }
 
 type ThingJsonHeader struct {
-	Id      string `json:"id"`
+	Id      uint32 `json:"id"`
 	Version string `json:"version"`
 	Sys     struct {
 		Ack int `json:"ack"`

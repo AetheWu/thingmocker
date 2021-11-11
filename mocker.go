@@ -45,8 +45,9 @@ func StartMocker(filepath string, addStep, msgNum, duration int) {
 		panic(err)
 	}
 	things := initThingMockers(triads)
-	things = initThingsConnByStep(things, addStep)
+	things = connThingsByStep(things, addStep)
 	communicate(things, msgNum, duration)
+	disconnectThingsByStep(things, addStep)
 }
 
 func initThingMockers(triads [][3]string) []*ThingMocker {
@@ -58,33 +59,31 @@ func initThingMockers(triads [][3]string) []*ThingMocker {
 	return things
 }
 
-func initThingsConnByStep(things []*ThingMocker, addStep int) []*ThingMocker {
+func connThingsByStep(things []*ThingMocker, addStep int) []*ThingMocker {
 	successList := make([]*ThingMocker, 0, len(things))
 	tick := time.Tick(time.Second * 3)
 	for left, right, i := 0, addStep, 0; left < len(things); left, right = i*addStep, (i+1)*addStep {
 		if right > len(things) {
 			right = len(things)
 		}
-		subs := initThingsConnConcurrency(things[left:right])
+		subs := connThingsConcurrency(things[left:right])
 		successList = append(successList, subs...)
 		i++
 		<-tick
 	}
 	return successList
-	//fmt.Printf("success rate: %.4f\n", len(successList)/len(things))
-	//ch := make(chan struct{})
-	//<- ch
 }
 
-func initThingsConnConcurrency(things []*ThingMocker) (successThings []*ThingMocker) {
+func connThingsConcurrency(things []*ThingMocker) (successThings []*ThingMocker) {
 	thingCh := make(chan *ThingMocker, len(successThings))
-	failedCh := make(chan struct{}, len(successThings))
+	doneCh := make(chan struct{})
 
 	connFn := func(wg *sync.WaitGroup, thing *ThingMocker) {
 		defer wg.Done()
 		err := thing.Conn()
 		if err != nil {
-			failedCh <- struct{}{}
+			Debugf("Conn: %s", err)
+			return
 		} else {
 			err = thing.SubDefaultTopics()
 			if err != nil {
@@ -94,21 +93,13 @@ func initThingsConnConcurrency(things []*ThingMocker) (successThings []*ThingMoc
 		}
 	}
 
-	countFn := func() {
-		failedNum := 0
-		for _ = range failedCh {
-			failedNum++
-		}
-		Infof("failed num: %d\n", failedNum)
-	}
-
 	rFn := func() {
 		for i := range thingCh {
 			successThings = append(successThings, i)
 		}
-		Infof("success num: %d\n", len(successThings))
+		Infof("successNum: %d, failedNum: %d", len(successThings), len(things) - len(successThings))
+		doneCh <- struct{}{}
 	}
-	go countFn()
 	go rFn()
 
 	wg := new(sync.WaitGroup)
@@ -117,9 +108,34 @@ func initThingsConnConcurrency(things []*ThingMocker) (successThings []*ThingMoc
 		go connFn(wg, things[i])
 	}
 	wg.Wait()
-	close(failedCh)
 	close(thingCh)
+	<-doneCh
 	return
+}
+
+func disconnectThingsByStep(things []*ThingMocker, addStep int) {
+	tick := time.Tick(time.Second * 10)
+	for left, right, i := 0, addStep, 0; left < len(things); left, right = i*addStep, (i+1)*addStep {
+		if right > len(things) {
+			right = len(things)
+		}
+		disconnectThingsConcurrency(things[left:right])
+		i++
+		<-tick
+	}
+}
+
+func disconnectThingsConcurrency(things []*ThingMocker) {
+	wg := new(sync.WaitGroup)
+	for i := range things {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			things[i].DisConn()
+		}(i)
+	}
+
+	wg.Wait()
 }
 
 func communicate(things []*ThingMocker, msgRate, duration int) {

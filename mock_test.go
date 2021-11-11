@@ -6,14 +6,13 @@ import (
 )
 
 func TestMocker(t *testing.T) {
+	mustLoad("defaults", "./configs/config.yaml")
 	filepath := "/Users/zhw/Documents/Triad.csv"
-
 	t.Run("Start Mocker", func(t *testing.T) {
 		StartMocker(filepath, 800, 10, 10)
 	})
 
 	t.Run("single thing mock", func(t *testing.T) {
-		mustLoad("defaults", "./configs/config.yaml")
 		dn, pk, ds := "00000000", "a1bb9d14", "4450c02f5fe642e206c39980a6629ad8"
 		thing := NewDefalutThingMocker(pk, dn, ds)
 		thing.Conn()
@@ -37,10 +36,11 @@ func TestMocker(t *testing.T) {
 	})
 
 	t.Run("things mocker", func(t *testing.T) {
-		triads, err := readTriadFromFile(filepath)
+		triads, err := readTriadFromFile(Conf.DEVICE_TRIAD_FILEPATH)
 		assert.NoError(t, err)
 		things := initThingMockers(triads)
-		initThingsConnConcurrency(things[:10])
+		successThings := connThingsConcurrency(things[:10])
+		communicate(successThings, 5, 100)
 		//time.Sleep(time.Second*3)
 		ch:=make(chan struct{})
 	    <-ch

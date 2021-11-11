@@ -43,7 +43,7 @@ type ThingMocker struct {
 	subTopics []string
 	pubTopics []string
 
-	msgId uint64
+	msgId uint32
 }
 
 func (t *ThingMocker) Conn() error {
@@ -59,6 +59,10 @@ func (t *ThingMocker) Conn() error {
 	}
 	t.client = c
 	return nil
+}
+
+func (t *ThingMocker) DisConn() {
+	t.client.Disconnect(0)
 }
 
 func (t *ThingMocker) String() string {
@@ -110,8 +114,8 @@ func (t *ThingMocker) PubEvents() error {
 	return t.PubMsg(t.pubTopics[IndexThingEventPost], 0, rawData)
 }
 
-func (t *ThingMocker) getId() uint64 {
-	return atomic.AddUint64(&t.msgId, 1)
+func (t *ThingMocker) getId() uint32 {
+	return atomic.AddUint32(&t.msgId, 1)
 }
 
 func authDeviceSign(deviceName, productKey, clientId, timestamp, deviceSecret, signMethod string) (string, error) {

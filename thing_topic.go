@@ -4,28 +4,26 @@ import "strings"
 
 // sub topics
 const (
-	ThingPropertyPostReply = "$fogcloud/+/+/thing/event/property/post_reply"
-	ThingEventPostReply    = "$fogcloud/+/+/thing/event/+/post_reply"
-	ThingService           = "$fogcloud/+/+/thing/service/+"
-	ThingPackDataPostReply = "$fogcloud/+/+/thing/pack/data/post_reply"
+	ThingPropertyPostReply = "$fogcloud/+/+/thing/down/property/post_reply"
+	ThingEventPostReply    = "$fogcloud/+/+/thing/down/event/+/post_reply"
+	ThingService           = "$fogcloud/+/+/thing/down/service/+"
 
-	ThingPropertySet = "$fogcloud/+/+/thing/event/property/set"
+	ThingPropertySet = "$fogcloud/+/+/thing/down/property/set"
 
-	ThingTopoDownlink   = "$fogcloud/+/+/thing/topo/downlink"
-	ThingShadowDownlink = "$fogcloud/+/+/thing/shadow/downlink"
-	ThingNTPDownlink    = "$fogcloud/+/+/thing/ntp/downlink"
+	ThingTopoDownlink   = "$fogcloud/+/+/thing/down/topo"
+	ThingShadowDownlink = "$fogcloud/+/+/thing/down/shadow"
+	ThingNTPDownlink    = "$fogcloud/+/+/thing/down/ntp"
 )
 
 // pub topics
 const (
-	ThingPropertyPost = "$fogcloud/+/+/thing/event/property/post"
-	ThingEventPost    = "$fogcloud/+/+/thing/event/+/post"
-	ThingServiceReply = "$fogcloud/+/+/thing/service/+/reply"
-	ThingPackDataPost = "$fogcloud/+/+/thing/pack/data/post"
+	ThingPropertyPost = "$fogcloud/+/+/thing/up/property/post"
+	ThingEventPost    = "$fogcloud/+/+/thing/up/event/+/post"
+	ThingServiceReply = "$fogcloud/+/+/thing/up/service/+/reply"
 
-	ThingTopoUplink   = "$fogcloud/+/+/thing/topo/uplink"
-	ThingShadowUplink = "$fogcloud/+/+/thing/shadow/uplink"
-	ThingNTPUplink    = "$fogcloud/+/+/thing/ntp/uplink"
+	ThingTopoUplink   = "$fogcloud/+/+/thing/up/topo"
+	ThingShadowUplink = "$fogcloud/+/+/thing/up/shadow"
+	ThingNTPUplink    = "$fogcloud/+/+/thing/up/ntp"
 )
 
 // sub topics index
@@ -56,7 +54,6 @@ var (
 		ThingPropertyPostReply,
 		ThingEventPostReply,
 		ThingService,
-		ThingPackDataPostReply,
 		ThingPropertySet,
 		ThingTopoDownlink,
 		ThingShadowDownlink,
@@ -67,7 +64,6 @@ var (
 		ThingPropertyPost,
 		ThingEventPost,
 		ThingServiceReply,
-		ThingPackDataPost,
 		ThingTopoUplink,
 		ThingShadowUplink,
 		ThingNTPUplink,
