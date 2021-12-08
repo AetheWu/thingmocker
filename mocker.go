@@ -44,23 +44,29 @@ func readTriadFromFile(filepath string) (triad [][3]string, err error) {
 }
 
 func StartMocker(filepath string, addStep, msgNum, duration int) {
-	triads, err := readTriadFromFile(filepath)
-	if err != nil {
-		panic(err)
-	}
-	Info("start mocking")
-	things := initThingMockers(triads)
-	things = connThingsByStep(things, addStep)
-
+	Println("start mocking")
 	chDone := make(chan struct{})
 	ctx, done := context.WithCancel(context.Background())
-	go communicate(ctx, chDone, things, msgNum, duration, addStep)
+
+	go runMocker(ctx, chDone, filepath, addStep, msgNum, duration)
+
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGHUP, syscall.SIGINT)
 	<-sig
 	done()
 	<-chDone
-	Info("end mocking gracefully")
+	Println("end mocking gracefully")
+}
+
+func runMocker(ctx context.Context, chDone chan struct{}, filepath string, addStep, msgNum, duration int) {
+	triads, err := readTriadFromFile(filepath)
+	if err != nil {
+		panic(err)
+	}
+	things := initThingMockers(triads)
+	things = connThingsByStep(ctx, things, addStep)
+
+	communicate(ctx, chDone, things, msgNum, duration, addStep)
 }
 
 func initThingMockers(triads [][3]string) []*ThingMocker {
@@ -72,10 +78,11 @@ func initThingMockers(triads [][3]string) []*ThingMocker {
 	return things
 }
 
-func connThingsByStep(things []*ThingMocker, addStep int) []*ThingMocker {
+func connThingsByStep(ctx context.Context, things []*ThingMocker, addStep int) []*ThingMocker {
 	successList := make([]*ThingMocker, 0, len(things))
 	tick := time.Tick(time.Second * 3)
-	Info("start thing connecting")
+	Println("start thing connecting")
+loop:
 	for left, right, i := 0, addStep, 0; left < len(things); left, right = i*addStep, (i+1)*addStep {
 		if right > len(things) {
 			right = len(things)
@@ -83,9 +90,14 @@ func connThingsByStep(things []*ThingMocker, addStep int) []*ThingMocker {
 		subs := connThingsConcurrency(things[left:right])
 		successList = append(successList, subs...)
 		i++
-		<-tick
+		select {
+		case <-tick:
+			continue
+		case <-ctx.Done():
+			break loop
+		}
 	}
-	Info("end thing connecting")
+	Println("end thing connecting")
 	return successList
 }
 
@@ -97,12 +109,12 @@ func connThingsConcurrency(things []*ThingMocker) (successThings []*ThingMocker)
 		defer wg.Done()
 		err := thing.Conn()
 		if err != nil {
-			Debugf("Conn: %s", err)
+			Printf("Conn: %s", err)
 			return
 		} else {
 			err = thing.SubDefaultTopics()
 			if err != nil {
-				Debugf("SubDefaultTopics: %s", err)
+				Printf("SubDefaultTopics: %s", err)
 			}
 			thingCh <- thing
 		}
@@ -112,7 +124,7 @@ func connThingsConcurrency(things []*ThingMocker) (successThings []*ThingMocker)
 		for i := range thingCh {
 			successThings = append(successThings, i)
 		}
-		Infof("successNum: %d, failedNum: %d", len(successThings), len(things)-len(successThings))
+		Printf("successNum: %d, failedNum: %d", len(successThings), len(things)-len(successThings))
 		doneCh <- struct{}{}
 	}
 	go rFn()
@@ -130,7 +142,7 @@ func connThingsConcurrency(things []*ThingMocker) (successThings []*ThingMocker)
 
 func disconnectThingsByStep(things []*ThingMocker, addStep int) {
 	tick := time.Tick(time.Second * 3)
-	Info("start thing disconnecting")
+	Println("start thing disconnecting")
 	for left, right, i := 0, addStep, 0; left < len(things); left, right = i*addStep, (i+1)*addStep {
 		if right > len(things) {
 			right = len(things)
@@ -138,9 +150,9 @@ func disconnectThingsByStep(things []*ThingMocker, addStep int) {
 		disconnectThingsConcurrency(things[left:right])
 		i++
 		<-tick
-		Infof("disconnected num: %d", addStep)
+		Printf("disconnected num: %d", addStep)
 	}
-	Info("end thing disconnecting")
+	Println("end thing disconnecting")
 }
 
 func disconnectThingsConcurrency(things []*ThingMocker) {
@@ -159,7 +171,7 @@ func disconnectThingsConcurrency(things []*ThingMocker) {
 func communicate(ctx context.Context, ch chan struct{}, things []*ThingMocker, msgRate, duration, step int) {
 	tick := time.NewTicker(time.Second)
 	endTimer := time.After(time.Second * time.Duration(duration))
-	Info("start thing communication mocking")
+	Println("start thing communication mocking")
 loop:
 	for {
 		select {
@@ -171,7 +183,7 @@ loop:
 			break loop
 		}
 	}
-	Info("end thing communication mocking")
+	Println("end thing communication mocking")
 	disconnectThingsByStep(things, step)
 	ch <- struct{}{}
 }

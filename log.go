@@ -3,7 +3,6 @@ package main
 import (
 	"go.uber.org/zap"
 	"log"
-	"os"
 )
 
 var (
@@ -13,12 +12,10 @@ var (
 
 func init() {
 	var logger *zap.Logger
-	if os.Getenv("GOENV") == "production" {
-		logger, _ = zap.NewProduction(zap.AddCaller(), zap.AddCallerSkip(1))
-	} else {
-		logger, _ = zap.NewDevelopment(zap.AddCaller(), zap.AddCallerSkip(1))
-	}
 
+	config := zap.NewProductionConfig()
+	config.OutputPaths = [] string {"stdout"}
+	logger, _ = config.Build(zap.AddCaller(), zap.AddCallerSkip(1))
 	defer logger.Sync()
 	sugar = logger.Sugar()
 	std = zap.NewStdLog(logger)
