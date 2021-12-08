@@ -138,6 +138,7 @@ func disconnectThingsByStep(things []*ThingMocker, addStep int) {
 		disconnectThingsConcurrency(things[left:right])
 		i++
 		<-tick
+		Infof("disconnected num: %d", addStep)
 	}
 	Info("end thing disconnecting")
 }
