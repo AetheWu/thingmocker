@@ -1,8 +1,10 @@
 package main
 
 import (
-	"github.com/stretchr/testify/assert"
+	"log"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMocker(t *testing.T) {
@@ -45,4 +47,16 @@ func TestMocker(t *testing.T) {
 		ch:=make(chan struct{})
 	    <-ch
 	})
+}
+
+func TestTransStrBytes(t *testing.T) {
+	bytes := []byte{0x80, 0x81}
+	str := string(bytes)
+	nBytes := []byte(str)
+	log.Printf("%s, %v", str, nBytes)
+
+	rawStr := "�"
+	nBytes = []byte(rawStr)
+	log.Printf("%s, %v", rawStr, nBytes)
+
 }

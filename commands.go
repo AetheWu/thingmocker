@@ -32,8 +32,9 @@ var (
 )
 
 var (
-	configEnv           string
-	configPath          string
+	configEnv  string
+	configPath string
+
 	deviceTriadFilePath string
 	rate                int
 	duration            int

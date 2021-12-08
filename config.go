@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/spf13/viper"
 	"log"
+
+	"github.com/spf13/viper"
 )
 
 var (
@@ -36,4 +37,9 @@ func mustLoad(env, filePath string) {
 	if err != nil {
 		log.Fatalf("UnmarshalExact: %s", err)
 	}
+
+	//Conf.MESSAGE_RATE = rate
+	//Conf.MESSAGE_DURATION = duration
+	//Conf.DEVICE_STEP_NUM = thingsAddStep
+	//Conf.DEVICE_TRIAD_FILEPATH = deviceTriadFilePath
 }

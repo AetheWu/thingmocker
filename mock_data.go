@@ -28,14 +28,14 @@ func getExampleThingModel() *Metadata {
 func generateExampleProperties(id uint32, timestamp int64) []byte {
 	msg := ThingJsonPropPost{
 		ThingJsonHeader: ThingJsonHeader{
-			Id:      id,
-			Version: "1.0",
+			Id:        id,
+			Version:   "1.0",
 			Timestamp: timestamp,
 		},
-		Params: map[string]interface{} {
-			"prop1": 111,
-			"prop2": 222,
-			"prop3": "hello",
+		Params: map[string]interface{}{
+			"prop1": id,
+			"prop2": id,
+			"prop3": timestamp,
 		},
 	}
 
