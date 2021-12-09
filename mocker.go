@@ -45,16 +45,20 @@ func readTriadFromFile(filepath string) (triad [][3]string, err error) {
 
 func StartMocker(filepath string, addStep, msgNum, duration int) {
 	Println("start mocking")
-	chDone := make(chan struct{})
+	chDone := make(chan struct{}, 1)
 	ctx, done := context.WithCancel(context.Background())
 
 	go runMocker(ctx, chDone, filepath, addStep, msgNum, duration)
 
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGHUP, syscall.SIGINT)
-	<-sig
-	done()
-	<-chDone
+
+	select {
+	case <-sig:
+		done()
+	case <-chDone:
+		Println("mocking done")
+	}
 	Println("end mocking gracefully")
 }
 
@@ -178,7 +182,7 @@ loop:
 		case <-ctx.Done():
 			break loop
 		case <-tick.C:
-			mockCommunicationsConcurrency(things, msgRate)
+			go mockCommunicationsConcurrency(things, msgRate)
 		case <-endTimer:
 			break loop
 		}

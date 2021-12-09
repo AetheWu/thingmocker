@@ -15,7 +15,7 @@
                 "${workspaceFolder}/configs/config.yaml",
                 "-e",
                 "defaults",
-                "start"
+                "mock"
             ],
             "showLog": true
         }

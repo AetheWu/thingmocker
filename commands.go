@@ -2,12 +2,14 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 const (
-	version = "0.0.1"
+	version = "1.0.0"
 )
 
 var (
@@ -15,9 +17,9 @@ var (
 		Use:   "thingmocker",
 		Short: "Thing mockers for iot load-testing",
 	}
-	startCmd = &cobra.Command{
-		Use:   "start [OPTIONS]",
-		Short: "start mocking things",
+	mockCmd = &cobra.Command{
+		Use:   "mock [OPTIONS]",
+		Short: "mock mocking things",
 		Run: func(cmd *cobra.Command, args []string) {
 			StartMocker(Conf.DEVICE_TRIAD_FILEPATH, Conf.DEVICE_STEP_NUM, Conf.MESSAGE_RATE, Conf.MESSAGE_DURATION)
 		},
@@ -42,17 +44,61 @@ var (
 )
 
 func init() {
-	startCmd.Flags().StringVarP(&configEnv, "env", "e", "development", "config env")
-	startCmd.Flags().StringVarP(&configPath, "config", "c", "/etc/thingmocker/config.yaml", "config file path")
-	startCmd.Flags().IntVarP(&thingsAddStep, "step", "s", 1000, "num of new things added to iot platform per second")
-	startCmd.Flags().StringVarP(&deviceTriadFilePath, "deviceTriadFilePath", "f", "/etc/thingmocker/triad.csv", "triad file to import")
-	startCmd.Flags().IntVarP(&rate, "rate", "r", 1000, "message rate of things uploaded msg to iot platform")
-	startCmd.Flags().IntVarP(&duration, "duration", "d", 60, "the time of load-testing")
+	mockCmd.Flags().StringVarP(&configEnv, "env", "e", "development", "config env")
+	mockCmd.Flags().StringVarP(&configPath, "config", "c", "/app/thingmocker/config.yaml", "config file path")
 
-	rootCmd.AddCommand(startCmd, versionCmd)
+	mockCmd.Flags().IntVarP(&thingsAddStep, "step", "s", 1000, "num of new things added to iot platform per second")
+	mockCmd.Flags().StringVarP(&deviceTriadFilePath, "device_triad_filepath", "f", "/etc/thingmocker/triad.csv", "triad file to import")
+	mockCmd.Flags().IntVarP(&rate, "rate", "r", 1000, "message rate of things uploaded msg to iot platform")
+	mockCmd.Flags().IntVarP(&duration, "duration", "d", 60, "the time of load-testing")
+
+	rootCmd.AddCommand(mockCmd, versionCmd)
 }
 
 func Execute() error {
 	cobra.OnInitialize(loadConfig)
 	return rootCmd.Execute()
+}
+
+var (
+	Conf ConfigData
+)
+
+type ConfigData struct {
+	MQTT_HOST string `mapstructure:"mqtt_host"`
+	MQTT_PORT int    `mapstructure:"mqtt_port"`
+
+	MESSAGE_RATE     int `mapstructure:"message_rate"`
+	MESSAGE_DURATION int `mapstructure:"message_duration"`
+
+	DEVICE_STEP_NUM       int    `mapstructure:"device_step_num"`
+	DEVICE_TRIAD_FILEPATH string `mapstructure:"device_triad_filepath"`
+}
+
+func loadConfig() {
+	mustLoad(configEnv, configPath)
+}
+
+func mustLoad(env, filePath string) {
+	v := viper.New()
+	v.SetConfigFile(filePath)
+
+	v.SetDefault("author", "zhw")
+	v.SetDefault("license", "apache")
+	err := v.ReadInConfig()
+	if err != nil {
+		log.Fatalf("ReadInConfig: %s", err)
+	}
+	v = v.Sub(env)
+
+	v.BindPFlag("message_rate", mockCmd.Flag("rate"))
+	v.BindPFlag("message_duration", mockCmd.Flag("duration"))
+	v.BindPFlag("device_step_num", mockCmd.Flag("step"))
+	v.BindPFlag("device_triad_filepath", mockCmd.Flag("device_triad_filepath"))
+
+	err = v.UnmarshalExact(&Conf)
+	if err != nil {
+		log.Fatalf("UnmarshalExact: %s", err)
+	}
+	log.Printf("config: %+v", Conf)
 }

@@ -36,17 +36,6 @@ func TestMocker(t *testing.T) {
 		ch:=make(chan struct{})
 		<-ch
 	})
-
-	t.Run("things mocker", func(t *testing.T) {
-		triads, err := readTriadFromFile(Conf.DEVICE_TRIAD_FILEPATH)
-		assert.NoError(t, err)
-		things := initThingMockers(triads)
-		successThings := connThingsConcurrency(things[:10])
-		communicate(successThings, 5, 100)
-		//time.Sleep(time.Second*3)
-		ch:=make(chan struct{})
-	    <-ch
-	})
 }
 
 func TestTransStrBytes(t *testing.T) {
