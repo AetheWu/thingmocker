@@ -14,6 +14,10 @@ import (
 	"time"
 )
 
+var (
+	successList []*ThingMocker
+)
+
 func readTriadFromFile(filepath string) (triad [][3]string, err error) {
 	rawData, err := ioutil.ReadFile(filepath)
 	if err != nil {
@@ -55,10 +59,10 @@ func StartMocker(filepath string, addStep, msgNum, duration int) {
 
 	select {
 	case <-sig:
-		done()
 	case <-chDone:
-		Println("mocking done")
 	}
+	done()
+	disconnectThingsByStep(successList, addStep)
 	Println("end mocking gracefully")
 }
 
@@ -68,9 +72,9 @@ func runMocker(ctx context.Context, chDone chan struct{}, filepath string, addSt
 		panic(err)
 	}
 	things := initThingMockers(triads)
-	things = connThingsByStep(ctx, things, addStep)
+	successList = connThingsByStep(ctx, things, addStep)
 
-	communicate(ctx, chDone, things, msgNum, duration, addStep)
+	communicate(ctx, chDone, successList, msgNum, duration, addStep)
 }
 
 func initThingMockers(triads [][3]string) []*ThingMocker {
@@ -172,7 +176,7 @@ func disconnectThingsConcurrency(things []*ThingMocker) {
 	wg.Wait()
 }
 
-func communicate(ctx context.Context, ch chan struct{}, things []*ThingMocker, msgRate, duration, step int) {
+func communicate(ctx context.Context, chDone chan struct{}, things []*ThingMocker, msgRate, duration, step int) {
 	tick := time.NewTicker(time.Second)
 	endTimer := time.After(time.Second * time.Duration(duration))
 	Println("start thing communication mocking")
@@ -188,8 +192,7 @@ loop:
 		}
 	}
 	Println("end thing communication mocking")
-	disconnectThingsByStep(things, step)
-	ch <- struct{}{}
+	chDone <- struct{}{}
 }
 
 func mockCommunicationsConcurrency(things []*ThingMocker, msgRate int) {
