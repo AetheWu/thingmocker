@@ -1,11 +1,12 @@
 defaults: &defaults
-  MQTT_HOST: fogapi.mxchip.com.cn
+  MQTT_HOST: localhost
   MQTT_PORT: 1883
 
-  MESSAGE_RATE: 167
-  MESSAGE_DURATION: 60
+  MESSAGE_RATE: 200
+  MESSAGE_DURATION: 1000000
 
-  DEVICE_STEP_NUM: 200
+  DEVICE_STEP_NUM: 100
+  DEVICE_NUM: 1000
   DEVICE_TRIAD_FILEPATH: ./configs/triads.csv
 
 development:

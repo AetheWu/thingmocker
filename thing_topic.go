@@ -4,6 +4,8 @@ import "strings"
 
 // sub topics
 const (
+	ThingDownlink = "$fogcloud/+/+/thing/down/#"
+
 	ThingPropertyPostReply = "$fogcloud/+/+/thing/down/property/post_reply"
 	ThingEventPostReply    = "$fogcloud/+/+/thing/down/event/+/post_reply"
 	ThingService           = "$fogcloud/+/+/thing/down/service/+"
@@ -51,13 +53,7 @@ const (
 
 var (
 	SubTopics = []string{
-		ThingPropertyPostReply,
-		ThingEventPostReply,
-		ThingService,
-		ThingPropertySet,
-		ThingTopoDownlink,
-		ThingShadowDownlink,
-		ThingNTPDownlink,
+		ThingDownlink,
 	}
 
 	PubTopics = []string{

@@ -47,15 +47,15 @@ func readTriadFromFile(filepath string) (triad [][3]string, err error) {
 	return
 }
 
-func StartMocker(filepath string, addStep, msgNum, duration int) {
+func StartMocker(filepath string, addStep, msgNum, duration, devNum int) {
 	Println("start mocking")
 	chDone := make(chan struct{}, 1)
 	ctx, done := context.WithCancel(context.Background())
 
-	go runMocker(ctx, chDone, filepath, addStep, msgNum, duration)
+	go runMocker(ctx, chDone, filepath, addStep, msgNum, duration, devNum)
 
 	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGHUP, syscall.SIGINT)
+	signal.Notify(sig, syscall.SIGHUP, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGKILL)
 
 	select {
 	case <-sig:
@@ -66,10 +66,13 @@ func StartMocker(filepath string, addStep, msgNum, duration int) {
 	Println("end mocking gracefully")
 }
 
-func runMocker(ctx context.Context, chDone chan struct{}, filepath string, addStep, msgNum, duration int) {
+func runMocker(ctx context.Context, chDone chan struct{}, filepath string, addStep, msgNum, duration, devNum int) {
 	triads, err := readTriadFromFile(filepath)
 	if err != nil {
 		panic(err)
+	}
+	if len(triads) > devNum {
+		triads = triads[:devNum]
 	}
 	things := initThingMockers(triads)
 	successList = connThingsByStep(ctx, things, addStep)
