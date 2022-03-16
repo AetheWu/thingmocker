@@ -47,12 +47,12 @@ func readTriadFromFile(filepath string) (triad [][3]string, err error) {
 	return
 }
 
-func StartMocker(filepath string, addStep, msgNum, duration, devNum int) {
+func StartMocker(ifaddr, filepath string, addStep, msgNum, duration, devNum int) {
 	Println("start mocking")
 	chDone := make(chan struct{}, 1)
 	ctx, done := context.WithCancel(context.Background())
 
-	go runMocker(ctx, chDone, filepath, addStep, msgNum, duration, devNum)
+	go runMocker(ctx, chDone, ifaddr, filepath, addStep, msgNum, duration, devNum)
 
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGHUP, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGKILL)
@@ -66,7 +66,7 @@ func StartMocker(filepath string, addStep, msgNum, duration, devNum int) {
 	Println("end mocking gracefully")
 }
 
-func runMocker(ctx context.Context, chDone chan struct{}, filepath string, addStep, msgNum, duration, devNum int) {
+func runMocker(ctx context.Context, chDone chan struct{}, ifaddr, filepath string, addStep, msgNum, duration, devNum int) {
 	triads, err := readTriadFromFile(filepath)
 	if err != nil {
 		panic(err)
@@ -74,16 +74,16 @@ func runMocker(ctx context.Context, chDone chan struct{}, filepath string, addSt
 	if len(triads) > devNum {
 		triads = triads[:devNum]
 	}
-	things := initThingMockers(triads)
+	things := initThingMockers(triads, ifaddr)
 	successList = connThingsByStep(ctx, things, addStep)
 
 	communicate(ctx, chDone, successList, msgNum, duration, addStep)
 }
 
-func initThingMockers(triads [][3]string) []*ThingMocker {
+func initThingMockers(triads [][3]string, ifaddr string) []*ThingMocker {
 	things := make([]*ThingMocker, len(triads))
 	for i := range triads {
-		thing := NewDefalutThingMocker(triads[i][2], triads[i][0], triads[i][1])
+		thing := NewDefalutThingMocker(triads[i][2], triads[i][0], triads[i][1], ifaddr)
 		things[i] = thing
 	}
 	return things

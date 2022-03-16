@@ -8,13 +8,14 @@ import (
 	"errors"
 	"fmt"
 	"hash"
+	"net"
 	"sync/atomic"
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-func NewDefalutThingMocker(productKey, deviceName, deviceSecret string) *ThingMocker {
+func NewDefalutThingMocker(productKey, deviceName, deviceSecret, ifaddr string) *ThingMocker {
 	return &ThingMocker{
 		productKey:   productKey,
 		deviceName:   deviceName,
@@ -26,11 +27,15 @@ func NewDefalutThingMocker(productKey, deviceName, deviceSecret string) *ThingMo
 		pubTopics: fillTopics(PubTopics, productKey, deviceName),
 
 		thingModel: getExampleThingModel(),
+
+		ifaddr: ifaddr,
 	}
 }
 
 type ThingMocker struct {
 	client mqtt.Client
+
+	ifaddr string
 
 	deviceName   string
 	productKey   string
@@ -53,12 +58,32 @@ func (t *ThingMocker) Conn() error {
 		SetClientID(t.getClientId()).
 		SetPassword(t.getPassword())
 
+	if t.ifaddr != "" {
+		dialer, err := t.newDialerWithIfaddr(t.ifaddr)
+		if err != nil {
+			return err
+		}
+		opts.SetDialer(dialer)
+	}
+
 	c := mqtt.NewClient(opts)
 	if token := c.Connect(); token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
 	t.client = c
 	return nil
+}
+
+func (t *ThingMocker) newDialerWithIfaddr(ifaddr string) (*net.Dialer, error) {
+	laddr, err := net.ResolveTCPAddr("", ifaddr)
+	if err != nil {
+		return nil, err
+	}
+	dial := &net.Dialer{
+		Timeout:   time.Second * 10,
+		LocalAddr: laddr,
+	}
+	return dial, nil
 }
 
 func (t *ThingMocker) DisConn() {
