@@ -187,8 +187,7 @@ func mockCommunicationsConcurrency(things []*ThingMocker, msgRate int) {
 	}
 
 	startIndex := rand.Int63n(int64(thingsNum))
-	commFn := func(wg *sync.WaitGroup, index int) {
-		defer wg.Done()
+	commFn := func(index int) {
 		if err := things[index].PubProperties(); err != nil {
 			Debugf("thing[%s] PubProperties: %s", things[index], err)
 		} else {
@@ -196,23 +195,17 @@ func mockCommunicationsConcurrency(things []*ThingMocker, msgRate int) {
 		}
 	}
 
-	wg := new(sync.WaitGroup)
 	endIndex := int(startIndex) + msgRate
 	if endIndex > thingsNum {
 		for i := int(startIndex); i < thingsNum; i++ {
-			wg.Add(1)
-			go commFn(wg, i)
+			commFn(i)
 		}
 		for i := 0; i < endIndex-thingsNum; i++ {
-			wg.Add(1)
-			go commFn(wg, i)
+			commFn(i)
 		}
 	} else {
 		for i := int(startIndex); i < endIndex; i++ {
-			wg.Add(1)
-			go commFn(wg, i)
+			commFn(i)
 		}
 	}
-
-	wg.Wait()
 }

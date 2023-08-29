@@ -2,13 +2,14 @@ defaults: &defaults
   MQTT_HOST: localhost
   MQTT_PORT: 1883
   IF_ADDR: 
-
-  MESSAGE_RATE: 300
-  MESSAGE_DURATION: 1000000
+  # 设备上报消息速率，单位：条/秒
+  MESSAGE_RATE: 1000 
+  # 消息上报持续时间，单位：秒
+  MESSAGE_DURATION: 100_000
 
   DEVICE_STEP_NUM: 100
-  DEVICE_NUM: 500
-  DEVICE_TRIAD_FILEPATH: ./configs/local_triad.txt
+  DEVICE_NUM: 1000
+  DEVICE_TRIAD_FILEPATH: ./configs/triads.txt
 
 development:
   <<: *defaults

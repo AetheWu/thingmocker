@@ -47,7 +47,7 @@ var (
 
 
 func init() {
-	mockCmd.Flags().StringVarP(&configEnv, "env", "e", "development", "config env")
+	mockCmd.Flags().StringVarP(&configEnv, "env", "e", "defaults", "config env")
 	mockCmd.Flags().StringVarP(&configPath, "config", "c", "/app/thingmocker/config.yaml", "config file path")
 
 	mockCmd.Flags().IntVarP(&thingsAddStep, "step", "s", 1000, "num of new things added to iot platform per second")
