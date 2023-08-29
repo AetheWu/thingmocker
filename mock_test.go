@@ -25,7 +25,7 @@ func TestMocker(t *testing.T) {
 	t.Run("thing mocker", func(t *testing.T) {
 		triads, err := readTriadFromFile(filepath)
 		assert.NoError(t, err)
-		thing := NewDefalutThingMocker(triads[0][2], triads[0][0], triads[0][1], "")
+		thing := NewDefalutThingMocker(triads[0].ProductKey, triads[0].DeviceName, triads[0].DeviceSecret, "")
 		err = thing.Conn()
 		if err == nil {
 			err = thing.SubDefaultTopics()

@@ -4,28 +4,28 @@ import "strings"
 
 // sub topics
 const (
-	ThingDownlink = "$fogcloud/+/+/thing/down/#"
+	ThingDownlink = "fogcloud/+/+/thing/down/#"
 
-	ThingPropertyPostReply = "$fogcloud/+/+/thing/down/property/post_reply"
-	ThingEventPostReply    = "$fogcloud/+/+/thing/down/event/+/post_reply"
-	ThingService           = "$fogcloud/+/+/thing/down/service/+"
+	ThingPropertyPostReply = "fogcloud/+/+/thing/down/property/post_reply"
+	ThingEventPostReply    = "fogcloud/+/+/thing/down/event/+/post_reply"
+	ThingService           = "fogcloud/+/+/thing/down/service/+"
 
-	ThingPropertySet = "$fogcloud/+/+/thing/down/property/set"
+	ThingPropertySet = "fogcloud/+/+/thing/down/property/set"
 
-	ThingTopoDownlink   = "$fogcloud/+/+/thing/down/topo"
-	ThingShadowDownlink = "$fogcloud/+/+/thing/down/shadow"
-	ThingNTPDownlink    = "$fogcloud/+/+/thing/down/ntp"
+	ThingTopoDownlink   = "fogcloud/+/+/thing/down/topo"
+	ThingShadowDownlink = "fogcloud/+/+/thing/down/shadow"
+	ThingNTPDownlink    = "fogcloud/+/+/thing/down/ntp"
 )
 
 // pub topics
 const (
-	ThingPropertyPost = "$fogcloud/+/+/thing/up/property/post"
-	ThingEventPost    = "$fogcloud/+/+/thing/up/event/+/post"
-	ThingServiceReply = "$fogcloud/+/+/thing/up/service/+/reply"
+	ThingPropertyPost = "fogcloud/+/+/thing/up/property/post"
+	ThingEventPost    = "fogcloud/+/+/thing/up/event/+/post"
+	ThingServiceReply = "fogcloud/+/+/thing/up/service/+/reply"
 
-	ThingTopoUplink   = "$fogcloud/+/+/thing/up/topo"
-	ThingShadowUplink = "$fogcloud/+/+/thing/up/shadow"
-	ThingNTPUplink    = "$fogcloud/+/+/thing/up/ntp"
+	ThingTopoUplink   = "fogcloud/+/+/thing/up/topo"
+	ThingShadowUplink = "fogcloud/+/+/thing/up/shadow"
+	ThingNTPUplink    = "fogcloud/+/+/thing/up/ntp"
 )
 
 // sub topics index

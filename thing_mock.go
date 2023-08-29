@@ -15,6 +15,12 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
+type Triad struct {
+	ProductKey   string `csv:"product_key" json:"fog_pk"`
+	DeviceName   string `csv:"device_name" json:"fog_dn"`
+	DeviceSecret string `csv:"device_secret" json:"fog_ds"`
+}
+
 func NewDefalutThingMocker(productKey, deviceName, deviceSecret, ifaddr string) *ThingMocker {
 	return &ThingMocker{
 		productKey:   productKey,

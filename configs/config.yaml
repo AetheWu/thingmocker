@@ -1,14 +1,14 @@
 defaults: &defaults
-  MQTT_HOST: api.beta.fogcloud.io
+  MQTT_HOST: localhost
   MQTT_PORT: 1883
-  IF_ADDR: 192.168.2.112:0
+  IF_ADDR: 
 
-  MESSAGE_RATE: 10
+  MESSAGE_RATE: 300
   MESSAGE_DURATION: 1000000
 
   DEVICE_STEP_NUM: 100
-  DEVICE_NUM: 10
-  DEVICE_TRIAD_FILEPATH: ./configs/triad1.csv
+  DEVICE_NUM: 500
+  DEVICE_TRIAD_FILEPATH: ./configs/local_triad.txt
 
 development:
   <<: *defaults

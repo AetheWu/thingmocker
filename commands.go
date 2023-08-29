@@ -45,6 +45,7 @@ var (
 	ifaddr              string
 )
 
+
 func init() {
 	mockCmd.Flags().StringVarP(&configEnv, "env", "e", "development", "config env")
 	mockCmd.Flags().StringVarP(&configPath, "config", "c", "/app/thingmocker/config.yaml", "config file path")

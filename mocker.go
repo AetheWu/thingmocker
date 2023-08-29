@@ -1,10 +1,8 @@
 package main
 
 import (
-	"bytes"
 	"context"
-	"encoding/csv"
-	"errors"
+	"encoding/json"
 	"io/ioutil"
 	"math/rand"
 	"os"
@@ -18,32 +16,15 @@ var (
 	successList []*ThingMocker
 )
 
-func readTriadFromFile(filepath string) (triad [][3]string, err error) {
+func readTriadFromFile(filepath string) (triads []Triad, err error) {
 	rawData, err := ioutil.ReadFile(filepath)
 	if err != nil {
 		return
 	}
 
-	lines, err := csv.NewReader(bytes.NewReader(rawData)).ReadAll()
-	if err != nil {
-		return
-	}
-
-	if len(lines) == 0 {
-		err = errors.New("empty triad")
-		return
-	}
-
-	triad = make([][3]string, len(lines)-1)
-	for i := 1; i < len(lines); i++ {
-		if len(lines[i]) != 3 {
-			err = errors.New("invalid csv format")
-			return
-		}
-		for j := range triad[i-1] {
-			triad[i-1][j] = lines[i][j]
-		}
-	}
+	triads = []Triad{}
+	err = json.Unmarshal(rawData, &triads)
+	// err = gocsv.UnmarshalBytes(rawData, &triads)
 	return
 }
 
@@ -80,10 +61,10 @@ func runMocker(ctx context.Context, chDone chan struct{}, ifaddr, filepath strin
 	communicate(ctx, chDone, successList, msgNum, duration, addStep)
 }
 
-func initThingMockers(triads [][3]string, ifaddr string) []*ThingMocker {
+func initThingMockers(triads []Triad, ifaddr string) []*ThingMocker {
 	things := make([]*ThingMocker, len(triads))
 	for i := range triads {
-		thing := NewDefalutThingMocker(triads[i][2], triads[i][0], triads[i][1], ifaddr)
+		thing := NewDefalutThingMocker(triads[i].ProductKey, triads[i].DeviceName, triads[i].DeviceSecret, ifaddr)
 		things[i] = thing
 	}
 	return things
@@ -210,6 +191,8 @@ func mockCommunicationsConcurrency(things []*ThingMocker, msgRate int) {
 		defer wg.Done()
 		if err := things[index].PubProperties(); err != nil {
 			Debugf("thing[%s] PubProperties: %s", things[index], err)
+		} else {
+			Debugf("thing[%s] pub property success", things[index])
 		}
 	}
 

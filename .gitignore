@@ -30,6 +30,7 @@
 /cmd/fogcloud/__debug_bin
 /cmd/fogcloud/fogcloud
 /configs/triad*
+__debug*
 
 ### npm-package ###
 /node_modules
