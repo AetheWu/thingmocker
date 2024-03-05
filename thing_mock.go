@@ -4,6 +4,7 @@ import (
 	"crypto/hmac"
 	"crypto/md5"
 	"crypto/sha1"
+	"crypto/tls"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -59,10 +60,11 @@ type ThingMocker struct {
 
 func (t *ThingMocker) Conn() error {
 	opts := mqtt.NewClientOptions().
-		AddBroker(fmt.Sprintf("tcp://%s:%d/mqtt", Conf.MQTT_HOST, Conf.MQTT_PORT)).
+		AddBroker(getMQTTURL()).
 		SetUsername(t.getUsername()).
 		SetClientID(t.getClientId()).
-		SetPassword(t.getPassword())
+		SetPassword(t.getPassword()).
+		SetTLSConfig(&tls.Config{InsecureSkipVerify: true})
 
 	if t.ifaddr != "" {
 		dialer, err := t.newDialerWithIfaddr(t.ifaddr)
@@ -78,6 +80,14 @@ func (t *ThingMocker) Conn() error {
 	}
 	t.client = c
 	return nil
+}
+
+func getMQTTURL() string {
+	if Conf.MQTT_TLS {
+		return fmt.Sprintf("tls://%s:%d", Conf.MQTT_HOST, Conf.MQTT_PORT)
+	} else {
+		return fmt.Sprintf("mqtt://%s:%d", Conf.MQTT_HOST, Conf.MQTT_PORT)
+	}
 }
 
 func (t *ThingMocker) newDialerWithIfaddr(ifaddr string) (*net.Dialer, error) {

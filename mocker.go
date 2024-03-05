@@ -104,10 +104,10 @@ func connThingsConcurrency(things []*ThingMocker) (successThings []*ThingMocker)
 			Printf("Conn: %s", err)
 			return
 		} else {
-			err = thing.SubDefaultTopics()
-			if err != nil {
-				Printf("SubDefaultTopics: %s", err)
-			}
+			thing.SubDefaultTopics()
+			// if err != nil {
+			// 	Printf("SubDefaultTopics: %s", err)
+			// }
 			thingCh <- thing
 		}
 	}
@@ -183,7 +183,8 @@ func mockCommunicationsConcurrency(things []*ThingMocker, msgRate int) {
 	thingsNum := len(things)
 	if msgRate > thingsNum {
 		Debug("message trans rate should be less than num of thing-mockers")
-		return
+		msgRate = thingsNum
+		// return
 	}
 
 	startIndex := rand.Int63n(int64(thingsNum))

@@ -1,20 +1,22 @@
 package main
 
 import (
-	"go.uber.org/zap"
 	"log"
+
+	"go.uber.org/zap"
 )
 
 var (
-	sugar  *zap.SugaredLogger
-	std    *log.Logger
+	sugar *zap.SugaredLogger
+	std   *log.Logger
 )
 
 func init() {
 	var logger *zap.Logger
 
 	config := zap.NewProductionConfig()
-	config.OutputPaths = [] string {"stdout"}
+	config.Level = zap.NewAtomicLevelAt(zap.DebugLevel)
+	config.OutputPaths = []string{"stdout"}
 	logger, _ = config.Build(zap.AddCaller(), zap.AddCallerSkip(1))
 	defer logger.Sync()
 	sugar = logger.Sugar()

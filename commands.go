@@ -45,7 +45,6 @@ var (
 	ifaddr              string
 )
 
-
 func init() {
 	mockCmd.Flags().StringVarP(&configEnv, "env", "e", "defaults", "config env")
 	mockCmd.Flags().StringVarP(&configPath, "config", "c", "/app/thingmocker/config.yaml", "config file path")
@@ -72,6 +71,7 @@ var (
 type ConfigData struct {
 	MQTT_HOST string `mapstructure:"mqtt_host"`
 	MQTT_PORT int    `mapstructure:"mqtt_port"`
+	MQTT_TLS  bool   `mapstructure:"mqtt_tls"`
 	IF_ADDR   string `mapstructure:"if_addr"`
 
 	MESSAGE_RATE     int `mapstructure:"message_rate"`
@@ -105,7 +105,7 @@ func mustLoad(env, filePath string) {
 	v.BindPFlag("device_triad_filepath", mockCmd.Flag("device_triad_filepath"))
 	v.BindPFlag("if_addr", mockCmd.Flag("ifaddr"))
 
-	err = v.UnmarshalExact(&Conf)
+	err = v.Unmarshal(&Conf)
 	if err != nil {
 		log.Fatalf("UnmarshalExact: %s", err)
 	}

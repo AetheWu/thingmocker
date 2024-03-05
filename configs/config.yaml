@@ -1,18 +1,23 @@
 defaults: &defaults
   MQTT_HOST: localhost
   MQTT_PORT: 1883
+  MQTT_TLS: false
   IF_ADDR: 
   # 设备上报消息速率，单位：条/秒
-  MESSAGE_RATE: 1000 
+  MESSAGE_RATE: 2000
   # 消息上报持续时间，单位：秒
   MESSAGE_DURATION: 100_000
 
-  DEVICE_STEP_NUM: 100
-  DEVICE_NUM: 1000
-  DEVICE_TRIAD_FILEPATH: ./configs/triads.txt
+  DEVICE_STEP_NUM: 500
+  DEVICE_NUM: 2000
+  DEVICE_TRIAD_FILEPATH: ./configs/local_triads_zh.txt
 
 development:
   <<: *defaults
-  MQTT_HOST: demo.beta.fogcloud.io
-  IF_ADDR: 192.168.2.112
-  DEVICE_TRIAD_FILEPATH: ./configs/triad1.csv
+  MQTT_HOST: pre-mqtt.fogcloud.io
+  MQTT_PORT: 8883
+  MQTT_TLS: true
+
+  DEVICE_STEP_NUM: 1000
+  DEVICE_NUM: 5000
+  DEVICE_TRIAD_FILEPATH: ./configs/prod-triads.txt

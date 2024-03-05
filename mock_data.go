@@ -33,9 +33,15 @@ func generateExampleProperties(id uint32, timestamp int64) []byte {
 			Timestamp: timestamp,
 		},
 		Params: map[string]interface{}{
-			"Brightness": id,
-			"Current": id,
-			"BatteryPercentage": timestamp,
+			"ACOnlineNum":             id,
+			"ACTotalNum":              id,
+			"BatteryClusterOnlineNum": timestamp,
+			"BatteryClusterTotalNum":  id,
+			"BatteryStackOnlineNum":   id,
+			"BatteryStackTotalNum":    id,
+			"CabinetOnlineNum":        id,
+			"CabinetTotalNum":         id,
+			"ChargesNum":              id,
 		},
 	}
 
