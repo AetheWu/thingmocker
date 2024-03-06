@@ -1,8 +1,10 @@
-package main
+package thingmocker
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"sync"
 )
 
@@ -67,4 +69,32 @@ func generateExampleEvents(id uint32, timestamp int64) []byte {
 	}
 	rawData, _ := json.Marshal(msg)
 	return rawData
+}
+
+func NewMockerMsg(topic, payload, format string) MockerMsg {
+	return MockerMsg{
+		Topic:   topic,
+		Payload: payload,
+		Format:  format,
+	}
+}
+
+type MockerMsg struct {
+	Topic   string `json:"topic"`
+	Payload string `json:"payload"`
+	Format  string `json:"format"` // json,hex
+}
+
+func (m MockerMsg) GetPayload() []byte {
+	if m.Format == "hex" {
+		bytes, _ := hex.DecodeString(m.Payload)
+		return bytes
+	}
+
+	return []byte(m.Payload)
+}
+
+func (m MockerMsg) GetTopic(pk, dn string) string {
+	s := strings.Replace(m.Topic, "+", pk, 1)
+	return strings.Replace(s, "+", dn, 1)
 }

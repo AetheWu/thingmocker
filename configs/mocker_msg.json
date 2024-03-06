@@ -1,0 +1,16 @@
+{
+    "bf3de5ef": [
+        {
+            "topic": "fogcloud/+/+/thing/up/through",
+            "payload": "0100320001000001000431120000",
+            "format": "hex"
+        }
+    ],
+    "de933c79": [
+        {
+            "topic": "fogcloud/+/+/thing/up/through",
+            "payload": "0100320001000001000431120000",
+            "format": "{\"id\":42,\"version\":\"1.0\",\"method\":\"node.raw\",\"params\":[{\"address\":265,\"raw_data\":\"320102001103321101002100003103\"}]}"
+        }
+    ]
+}

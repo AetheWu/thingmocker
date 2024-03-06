@@ -1,4 +1,4 @@
-package main
+package thingmocker
 
 type Metadata struct {
 	Properties map[string]*MetaProperty `json:"properties"`         //属性

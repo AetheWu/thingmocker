@@ -1,4 +1,4 @@
-package main
+package thingmocker
 
 import (
 	"crypto/hmac"
@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"hash"
+	"log"
 	"net"
 	"sync/atomic"
 	"time"
@@ -22,7 +23,7 @@ type Triad struct {
 	DeviceSecret string `csv:"device_secret" json:"fog_ds"`
 }
 
-func NewDefalutThingMocker(productKey, deviceName, deviceSecret, ifaddr string) *ThingMocker {
+func NewDefalutThingMocker(productKey, deviceName, deviceSecret, ifaddr string, msgs []MockerMsg) *ThingMocker {
 	return &ThingMocker{
 		productKey:   productKey,
 		deviceName:   deviceName,
@@ -35,7 +36,8 @@ func NewDefalutThingMocker(productKey, deviceName, deviceSecret, ifaddr string) 
 
 		thingModel: getExampleThingModel(),
 
-		ifaddr: ifaddr,
+		ifaddr:     ifaddr,
+		mockerMsgs: msgs,
 	}
 }
 
@@ -56,6 +58,8 @@ type ThingMocker struct {
 	pubTopics []string
 
 	msgId uint32
+
+	mockerMsgs []MockerMsg
 }
 
 func (t *ThingMocker) Conn() error {
@@ -153,6 +157,18 @@ func (t *ThingMocker) PubProperties() error {
 func (t *ThingMocker) PubEvents() error {
 	rawData := generateExampleEvents(t.getId(), time.Now().Unix())
 	return t.PubMsg(t.pubTopics[IndexThingEventPost], 0, rawData)
+}
+
+func (t *ThingMocker) PubMockerMsg() {
+	tick := time.NewTicker(time.Second * 5)
+	for {
+		<-tick.C
+		for i := range t.mockerMsgs {
+			topic := t.mockerMsgs[i].GetTopic(t.productKey, t.deviceName)
+			log.Printf("pk[%s], dn[%s]; pub topic[%s]", t.productKey, t.deviceName, topic)
+			t.client.Publish(topic, 0, false, []byte(t.mockerMsgs[i].GetPayload()))
+		}
+	}
 }
 
 func (t *ThingMocker) getId() uint32 {
