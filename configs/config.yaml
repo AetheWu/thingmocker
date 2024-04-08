@@ -23,8 +23,18 @@ development: &development
   DEVICE_NUM: 500
   DEVICE_TRIAD_FILEPATH: ./configs/prod_triads.txt
 
-test:
+raw:
   <<: *development
-  MESSAGE_RATE: 0
-  DEVICE_TRIAD_FILEPATH: /Users/lethe/code/work/thingmocker/configs/prod_triads.txt
-  COMM_FILEPATH: /Users/lethe/code/work/thingmocker/configs/mocker_msg.json
+  DEVICE_STEP_NUM: 100
+  DEVICE_NUM: 500
+  MESSAGE_RATE: 200
+  DEVICE_TRIAD_FILEPATH: /Users/lethe/code/work/thingmocker/configs/triads_raw.json
+  COMM_FILEPATH: /Users/lethe/code/work/thingmocker/configs/mocker_msg_raw.json
+
+mesh:
+  <<: *development
+  DEVICE_STEP_NUM: 100
+  DEVICE_NUM: 500
+  MESSAGE_RATE: 200
+  DEVICE_TRIAD_FILEPATH: /Users/lethe/code/work/thingmocker/configs/triads_mesh.json
+  COMM_FILEPATH: /Users/lethe/code/work/thingmocker/configs/mocker_msg_mesh.json

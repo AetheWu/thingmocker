@@ -1,0 +1,11 @@
+{
+    "bf3de5ef": {
+        "*": [
+            {
+                "topic": "fogcloud/+/+/thing/up/through",
+                "payload": "0100320001000001000431120000",
+                "format": "hex"
+            }
+        ]
+    }
+}

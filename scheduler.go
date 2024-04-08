@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -39,12 +40,12 @@ func readTriadFromFile(filepath string) (triads []Triad, err error) {
 	return
 }
 
-func readMsgFromFile(filepath string) (map[string][]MockerMsg, error) {
+func readMsgFromFile(filepath string) (map[string]map[string][]MockerMsg, error) {
 	rawData, err := os.ReadFile(filepath)
 	if err != nil {
 		return nil, err
 	}
-	msgs := make(map[string][]MockerMsg)
+	msgs := make(map[string]map[string][]MockerMsg)
 	err = json.Unmarshal(rawData, &msgs)
 	return msgs, err
 }
@@ -84,11 +85,19 @@ func (s *MockerScheduler) Stop() {
 	s.mockDisconnect()
 }
 
-func newThingMockers(triads []Triad, ifaddr string, msgs map[string][]MockerMsg) []*ThingMocker {
+func newThingMockers(triads []Triad, ifaddr string, msgs map[string]map[string][]MockerMsg) []*ThingMocker {
 	things := make([]*ThingMocker, len(triads))
 	for i := range triads {
-		commMsgs := msgs[triads[i].ProductKey]
-		thing := NewDefalutThingMocker(triads[i].ProductKey, triads[i].DeviceName, triads[i].DeviceSecret, ifaddr, commMsgs)
+		pkMockerMsgs := msgs[triads[i].ProductKey]
+		var thingMockerMsgs []MockerMsg
+		if pkMockerMsgs != nil {
+			thingMockerMsgs = pkMockerMsgs[triads[i].DeviceName]
+			msgs, ok := pkMockerMsgs["*"]
+			if ok {
+				thingMockerMsgs = append(thingMockerMsgs, msgs...)
+			}
+		}
+		thing := NewDefalutThingMocker(triads[i].ProductKey, triads[i].DeviceName, triads[i].DeviceSecret, ifaddr, thingMockerMsgs)
 		things[i] = thing
 	}
 	return things
@@ -98,6 +107,10 @@ func (s *MockerScheduler) mockConnect() {
 	tick := time.NewTicker(time.Second * 3)
 	defer tick.Stop()
 	log.Println("start thing connecting")
+	thingNum := len(s.mockers)
+	if s.cfg.DEVICE_NUM > thingNum {
+		s.cfg.DEVICE_NUM = thingNum
+	}
 	go func() {
 	loop:
 		for left, right, i := 0, s.cfg.DEVICE_STEP_NUM, 0; left < s.cfg.DEVICE_NUM; left, right = i*s.cfg.DEVICE_STEP_NUM, (i+1)*s.cfg.DEVICE_STEP_NUM {
@@ -122,8 +135,21 @@ func (s *MockerScheduler) mockConnect() {
 func (s *MockerScheduler) recvConnectedThingMocker() {
 	for i := range s.ch {
 		s.connectedMockers = append(s.connectedMockers, i)
+		go s.mockThingPublish(i)
 	}
 	log.Printf("Things all connected num: %d", len(s.connectedMockers))
+}
+
+func (s *MockerScheduler) mockThingPublish(thing *ThingMocker) {
+	tick := time.NewTicker(time.Second)
+	for i := 0; i < 5; i++ {
+		for i := range thing.mockerMsgs {
+			topic := thing.mockerMsgs[i].GetTopic(thing.productKey, thing.deviceName)
+			payload := thing.mockerMsgs[i].GetPayload()
+			thing.PubMsg(topic, 0, payload)
+		}
+		<-tick.C
+	}
 }
 
 func (s *MockerScheduler) connThingsConcurrency(things []*ThingMocker) {
@@ -195,15 +221,16 @@ func (s *MockerScheduler) mockPublishOnConcurrency() {
 	thingsNum := len(s.connectedMockers)
 	msgRate := s.cfg.MESSAGE_RATE
 	if msgRate > thingsNum {
-		Debug("message trans rate should be less than num of thing-mockers")
 		msgRate = thingsNum
 	}
 	startIndex := rand.Int63n(int64(thingsNum))
 	commFn := func(index int) {
-		if err := s.connectedMockers[index].PubProperties(); err != nil {
-			Debugf("thing[%s] PubProperties: %s", s.connectedMockers[index], err)
-		} else {
-			// Debugf("thing[%s] pub property success", s.connectedMockers[index])
+		for i := range s.connectedMockers[index].mockerMsgs {
+			if !strings.Contains(s.connectedMockers[index].mockerMsgs[i].Payload, "login") {
+				topic := s.connectedMockers[index].mockerMsgs[i].GetTopic(s.connectedMockers[index].productKey, s.connectedMockers[index].deviceName)
+				payload := s.connectedMockers[index].mockerMsgs[i].GetPayload()
+				s.connectedMockers[index].PubMsg(topic, 0, payload)
+			}
 		}
 	}
 

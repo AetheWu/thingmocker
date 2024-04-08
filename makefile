@@ -1,5 +1,5 @@
 run:
-	@go run cmd/main.go -c configs/config.yaml -e test mock
+	@go run cmd/main.go -c configs/config.yaml -e mesh mock
 
 build:
-	@go build -o dist/thingmocker cmd/main.go
+	@GOOS=linux go build -o dist/thingmocker cmd/main.go

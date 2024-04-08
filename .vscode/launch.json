@@ -15,7 +15,7 @@
                 "-c",
                 "${workspaceFolder}/configs/config.yaml",
                 "-e",
-                "test",
+                "raw",
             ],
             "showLog": true
         }

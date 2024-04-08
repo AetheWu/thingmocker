@@ -38,3 +38,4 @@ package.json
 package-lock.json
 
 stats.html
+/configs/local_*.json

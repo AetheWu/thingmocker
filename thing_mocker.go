@@ -68,7 +68,16 @@ func (t *ThingMocker) Conn() error {
 		SetUsername(t.getUsername()).
 		SetClientID(t.getClientId()).
 		SetPassword(t.getPassword()).
-		SetTLSConfig(&tls.Config{InsecureSkipVerify: true})
+		SetTLSConfig(&tls.Config{InsecureSkipVerify: true}).
+		SetConnectRetry(true).
+		SetAutoReconnect(true).
+		SetConnectRetryInterval(time.Second * 10).SetCleanSession(true).
+		SetConnectionLostHandler(func(c mqtt.Client, err error) {
+			log.Printf("pk[%s],dn[%s] Connection lost: %v", t.productKey, t.deviceName, err)
+		}).
+		SetReconnectingHandler(func(c mqtt.Client, co *mqtt.ClientOptions) {
+			log.Printf("pk[%s],dn[%s] Reconnecting", t.productKey, t.deviceName)
+		})
 
 	if t.ifaddr != "" {
 		dialer, err := t.newDialerWithIfaddr(t.ifaddr)
