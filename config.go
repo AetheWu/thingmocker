@@ -7,7 +7,18 @@ import (
 )
 
 var (
-	Conf ConfigData
+	Conf ConfigData = ConfigData{
+		MQTT_HOST: "localhost",
+		MQTT_PORT: 1883,
+
+		MESSAGE_RATE:     1000,
+		MESSAGE_DURATION: 3600 * 24 * 7,
+		DEVICE_STEP_NUM:  100,
+		DEVICE_NUM:       100,
+
+		DEVICE_TRIAD_FILEPATH: "/etc/thingmocker/triads.csv",
+		COMM_FILEPATH:         "/etc/thingmocker/comm.csv",
+	}
 )
 
 type ConfigData struct {

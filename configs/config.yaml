@@ -10,8 +10,8 @@ defaults: &defaults
 
   DEVICE_STEP_NUM: 500
   DEVICE_NUM: 2000
-  DEVICE_TRIAD_FILEPATH: ./configs/local_triads_zh.txt
-  COMM_FILEPATH: ./configs/mocker_msg.json
+  DEVICE_TRIAD_FILEPATH: /etc/thingmocker/triads.txt
+  COMM_FILEPATH: /etc/thingmocker/mocker_msg.json
 
 development: &development
   <<: *defaults
@@ -21,20 +21,9 @@ development: &development
 
   DEVICE_STEP_NUM: 100
   DEVICE_NUM: 500
-  DEVICE_TRIAD_FILEPATH: ./configs/prod_triads.txt
 
-raw:
-  <<: *development
-  DEVICE_STEP_NUM: 100
-  DEVICE_NUM: 500
-  MESSAGE_RATE: 200
-  DEVICE_TRIAD_FILEPATH: /Users/lethe/code/work/thingmocker/configs/triads_raw.json
-  COMM_FILEPATH: /Users/lethe/code/work/thingmocker/configs/mocker_msg_raw.json
+test:
+  <<: *defaults
 
-mesh:
-  <<: *development
-  DEVICE_STEP_NUM: 100
-  DEVICE_NUM: 500
-  MESSAGE_RATE: 200
-  DEVICE_TRIAD_FILEPATH: /Users/lethe/code/work/thingmocker/configs/triads_mesh.json
-  COMM_FILEPATH: /Users/lethe/code/work/thingmocker/configs/mocker_msg_mesh.json
+production:
+  <<: *defaults
