@@ -23,7 +23,7 @@ type Triad struct {
 	DeviceSecret string `csv:"device_secret" json:"fog_ds"`
 }
 
-func NewDefalutThingMocker(productKey, deviceName, deviceSecret, ifaddr string, msgs []MockerMsg) *ThingMocker {
+func NewDefalutThingMocker(cfg ConfigData, productKey, deviceName, deviceSecret, ifaddr string, msgs []MockerMsg) *ThingMocker {
 	return &ThingMocker{
 		productKey:   productKey,
 		deviceName:   deviceName,
@@ -38,6 +38,8 @@ func NewDefalutThingMocker(productKey, deviceName, deviceSecret, ifaddr string, 
 
 		ifaddr:     ifaddr,
 		mockerMsgs: msgs,
+
+		cfg: cfg,
 	}
 }
 
@@ -45,6 +47,8 @@ type ThingMocker struct {
 	client mqtt.Client
 
 	ifaddr string
+
+	cfg ConfigData
 
 	deviceName   string
 	productKey   string
@@ -75,9 +79,14 @@ func (t *ThingMocker) Conn() error {
 		SetConnectionLostHandler(func(c mqtt.Client, err error) {
 			log.Printf("pk[%s],dn[%s] Connection lost: %v", t.productKey, t.deviceName, err)
 		}).
-		SetReconnectingHandler(func(c mqtt.Client, co *mqtt.ClientOptions) {
-			log.Printf("pk[%s],dn[%s] Reconnecting", t.productKey, t.deviceName)
-		})
+		SetCleanSession(t.cfg.MQTT_Clean_Session).
+		SetOnConnectHandler(func(c mqtt.Client) {
+			for i := range t.subTopics {
+				c.Subscribe(t.subTopics[i], 1, func(c mqtt.Client, m mqtt.Message) {})
+			}
+			// log.Printf("pk[%s],dn[%s] Connected", t.productKey, t.deviceName)
+		}).
+		SetResumeSubs(t.cfg.MQTT_Resume_Subs)
 
 	if t.ifaddr != "" {
 		dialer, err := t.newDialerWithIfaddr(t.ifaddr)
@@ -146,11 +155,11 @@ func (t *ThingMocker) PubMsg(topic string, qos byte, payload interface{}) error 
 func (t *ThingMocker) SubDefaultTopics() error {
 	topics := make(map[string]byte, len(t.subTopics))
 	for i := range t.subTopics {
-		topics[t.subTopics[i]] = 0
+		topics[t.subTopics[i]] = 1
 	}
 
 	tk := t.client.SubscribeMultiple(topics, func(client mqtt.Client, message mqtt.Message) {
-		//Debugf("connected: %s", message.Payload())
+		// log.Printf("pk[%s],dn[%s] receive: %s\n", t.productKey, t.deviceName, message.Payload())
 	})
 	if tk.Wait() && tk.Error() != nil {
 		return tk.Error()

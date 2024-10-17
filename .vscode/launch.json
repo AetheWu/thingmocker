@@ -13,7 +13,7 @@
             "args": [
                 "mock",
                 "-c",
-                "${workspaceFolder}/configs/config.yaml",
+                "${workspaceFolder}/configs/local_config.yaml",
                 "-e",
                 "raw",
             ],

@@ -71,7 +71,7 @@ func NewMockerScheduler(cfg ConfigData) (*MockerScheduler, error) {
 	if err != nil {
 		return nil, err
 	}
-	s.mockers = newThingMockers(triads, cfg.IF_ADDR, msgs)
+	s.mockers = newThingMockers(triads, cfg, msgs)
 	return s, nil
 }
 
@@ -85,7 +85,7 @@ func (s *MockerScheduler) Stop() {
 	s.mockDisconnect()
 }
 
-func newThingMockers(triads []Triad, ifaddr string, msgs map[string]map[string][]MockerMsg) []*ThingMocker {
+func newThingMockers(triads []Triad, cfg ConfigData, msgs map[string]map[string][]MockerMsg) []*ThingMocker {
 	things := make([]*ThingMocker, len(triads))
 	for i := range triads {
 		pkMockerMsgs := msgs[triads[i].ProductKey]
@@ -97,7 +97,7 @@ func newThingMockers(triads []Triad, ifaddr string, msgs map[string]map[string][
 				thingMockerMsgs = append(thingMockerMsgs, msgs...)
 			}
 		}
-		thing := NewDefalutThingMocker(triads[i].ProductKey, triads[i].DeviceName, triads[i].DeviceSecret, ifaddr, thingMockerMsgs)
+		thing := NewDefalutThingMocker(cfg, triads[i].ProductKey, triads[i].DeviceName, triads[i].DeviceSecret, cfg.IF_ADDR, thingMockerMsgs)
 		things[i] = thing
 	}
 	return things
@@ -122,6 +122,9 @@ func (s *MockerScheduler) mockConnect() {
 			select {
 			case <-tick.C:
 				continue
+			case <-s.closeCh:
+				log.Println("stop mockConnect")
+				break loop
 			case <-s.ch:
 				break loop
 			}
@@ -166,6 +169,12 @@ func (s *MockerScheduler) connThingsConcurrency(things []*ThingMocker) {
 	}
 	wg := new(sync.WaitGroup)
 	for i := range things {
+		select {
+		case <-s.closeCh:
+			log.Println("stop connThingsConcurrency")
+			return
+		default:
+		}
 		wg.Add(1)
 		go connFn(wg, things[i])
 	}
@@ -203,14 +212,18 @@ func (s *MockerScheduler) mockDisconnectOnConcurrency(things []*ThingMocker) {
 }
 
 func (s *MockerScheduler) mockPublish() {
-	tick := time.NewTicker(time.Second)
 	Println("start thing communication mocking")
+	if s.cfg.MESSAGE_RATE == 0 {
+		return
+	}
+	tick := time.NewTicker(time.Second)
 loop:
 	for {
 		select {
 		case <-tick.C:
 			go s.mockPublishOnConcurrency()
 		case <-s.closeCh:
+			log.Println("stop mockPublish")
 			break loop
 		}
 	}
@@ -220,6 +233,9 @@ loop:
 func (s *MockerScheduler) mockPublishOnConcurrency() {
 	thingsNum := len(s.connectedMockers)
 	msgRate := s.cfg.MESSAGE_RATE
+	if msgRate == 0 {
+		return
+	}
 	if msgRate > thingsNum {
 		msgRate = thingsNum
 	}

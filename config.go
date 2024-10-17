@@ -11,13 +11,16 @@ var (
 		MQTT_HOST: "localhost",
 		MQTT_PORT: 1883,
 
-		MESSAGE_RATE:     1000,
+		MESSAGE_RATE:     0,
 		MESSAGE_DURATION: 3600 * 24 * 7,
 		DEVICE_STEP_NUM:  100,
 		DEVICE_NUM:       100,
 
 		DEVICE_TRIAD_FILEPATH: "/etc/thingmocker/triads.csv",
 		COMM_FILEPATH:         "/etc/thingmocker/comm.csv",
+
+		MQTT_Resume_Subs:   true,
+		MQTT_Clean_Session: true,
 	}
 )
 
@@ -34,6 +37,9 @@ type ConfigData struct {
 	DEVICE_NUM            int    `mapstructure:"device_num"`
 	DEVICE_TRIAD_FILEPATH string `mapstructure:"device_triad_filepath"`
 	COMM_FILEPATH         string `mapstructure:"comm_filepath"`
+
+	MQTT_Clean_Session bool `mapstructure:"mqtt_clean_session"`
+	MQTT_Resume_Subs   bool `mapstructure:"mqtt_resume_subs"`
 }
 
 func LoadConfig(env, path string) func() {
